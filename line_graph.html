@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>D3 and Scalable Vector Graphics</title>
+
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.8/dc.min.css"/>
+    <style>
+        div {
+            clear: left;
+        }
+    </style>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.8/dc.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/queue-async/1.0.7/queue.min.js"></script>
+
+</head>
+<body>
+    <h1>Data Visualisation</h1>
+
+    <h2>DC LineChart</h2>
+
+    <div>
+        <h3>Total Spend Per Month</h3>
+        <div id="spend-per-month"></div>
+    </div>
+
+
+    <script>
+        queue()  // This info is pretty standard when using Queue
+            .defer(d3.json, "data/transactions.json")
+            .await(makeGraphs);
+            
+        function makeGraphs(error, transactionsData) {
+            var ndx = crossfilter(transactionsData);
+            
+            // Make sure that the data, in particular, the date format, is formatted in a way that can be represented by Crossfilter, DC, and D3. You can ensure this by using a format() function that comes with D3.
+            var parseDate = d3.time.format("%d/%m/%Y").parse;
+            transactionsData.forEach(function(d) {  // d represents a datum in our dataset.
+                d.date = parseDate(d.date);
+            });
+    
+    
+            var date_dim = ndx.dimension(dc.pluck("date"));
+            var total_spend_per_date = date_dim.group().reduceSum(dc.pluck('spend'));
+            
+            // We're going to examine and extract the minimum date and the maximum date that are available on our dataset.
+            var minDate = date_dim.bottom(1)[0].date;
+            var maxDate = date_dim.top(1)[0].date;
+            // We get the oldest date by using date_dim.bottom and the newest date, or the most recent date, by using date_dim.top.
+            
+            dc.lineChart("#spend-per-month")
+                .width(1000)
+                .height(300)
+                .margins({top: 10, right: 50, bottom: 30, left:50})  // Top right, left, and bottom are relative to the parent viewport, to the div itself, not the entire browser screen.
+                .dimension(date_dim)
+                .group(total_spend_per_date)
+                .transitionDuration(500)
+                .x(d3.time.scale().domain([minDate, maxDate]))  // Our time scale uses our minDate and our maxDate.
+                .xAxisLabel("Month") // Set an x-axis to the label of "Month".
+                .yAxis().ticks(4); // Shows number of ticks on the y-size. Ticks are the spaces the countable numbers.
+                
+            dc.renderAll();
+        }
+    </script>
+</body>
+</html>
