@@ -45,7 +45,7 @@
         var minDate = date_dim.bottom(1)[0].date;
         var maxDate = date_dim.top(1)[0].date;
         
-        
+        /*
         var tomSpendByMonth = date_dim.group().reduceSum(function (d) {
             if (d.name === "Tom") {  
                 return +d.spend;     // The + is a JavaScript shortcut, or little trick, that attempts to convert a number that's been represented in string format into an actual number.
@@ -68,25 +68,29 @@
             } else {
                 return 0;
             }
-        });
+        }); */
         
-        /*
-        More effecient/ lazy way to declare the -SpendByMonth var:
+        
+        // More effecient/ lazy way to declare the -SpendByMonth var:
         function spend_by_name(name) {
             return function (d) {
-                if (d.name === "name") {
-                    retrun +d.spend;
+                if (d.name === name) {
+                    return +d.spend;
                 } else {
                     return 0;
                 }
-            }
+            };
         }
         
-        With this option the var to call the names (of tom/bob/alice) will become e.g.:
+        // With this option the var to call the names below it (of tom/bob/alice) will become e.g.:
         
         var tomSpendByMonth = date_dim.group().reduceSum(spend_by_name("Tom"));
-        etc
-        */
+        
+        var bobSpendByMonth = date_dim.group().reduceSum(spend_by_name("Bob"));
+        
+        var aliceSpendByMonth = date_dim.group().reduceSum(spend_by_name("Alice"));
+        // etc
+        
         
         var compositeChart = dc.compositeChart("#composite-chart");
         
